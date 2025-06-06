@@ -1,16 +1,34 @@
 import 'package:flutter/material.dart';
+import '../services/audio_recorder_service.dart';
 
-class RecordButton extends StatelessWidget {
-  final VoidCallback onPressed;
+class RecordButton extends StatefulWidget {
+  final Function(String path) onFinished;
 
-  const RecordButton({super.key, required this.onPressed});
+  const RecordButton({super.key, required this.onFinished});
+
+  @override
+  State<RecordButton> createState() => _RecordButtonState();
+}
+
+class _RecordButtonState extends State<RecordButton> {
+  bool gravando = false;
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
-      icon: const Icon(Icons.mic),
-      label: const Text("Gravar e Analisar"),
-      onPressed: onPressed,
+      icon: Icon(gravando ? Icons.stop : Icons.mic),
+      label: Text(gravando ? "Parar gravação" : "Gravar"),
+      onPressed: () async {
+        if (!gravando) {
+          await AudioRecorderService.gravar();
+        } else {
+          final path = await AudioRecorderService.parar();
+          if (path != null) widget.onFinished(path);
+        }
+        setState(() {
+          gravando = !gravando;
+        });
+      },
     );
   }
 }

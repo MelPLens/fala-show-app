@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 import '../services/mock_ai_service.dart';
 import '../screens/result_screen.dart';
+import '../widgets/record_button.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  final palavra = 'MACACO';
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
-  void _simularAnalise(BuildContext context) async {
+class _HomeScreenState extends State<HomeScreen> {
+  final palavra = 'MACACO';
+  String? caminhoAudio;
+
+  void _analisarFala() async {
+    if (caminhoAudio == null) return;
+
     final insights = await MockAIService.analisarFala(palavra);
     Navigator.push(
       context,
@@ -26,22 +35,26 @@ class HomeScreen extends StatelessWidget {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
-            'MACACO',
-            style: TextStyle(
-              fontSize: 32,
-              letterSpacing: 6,
-              color: Colors.purple,
-            ),
+          Text(
+            palavra,
+            style: const TextStyle(
+                fontSize: 32, letterSpacing: 6, color: Colors.purple),
           ),
           const SizedBox(height: 20),
           Image.asset('assets/macaco.png', height: 200),
           const SizedBox(height: 20),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.mic),
-            label: const Text("Gravar e Analisar"),
-            onPressed: () => _simularAnalise(context),
+          RecordButton(
+            onFinished: (path) {
+              setState(() {
+                caminhoAudio = path;
+              });
+            },
           ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: caminhoAudio != null ? _analisarFala : null,
+            child: const Text("Analisar Fala"),
+          )
         ],
       ),
     );
